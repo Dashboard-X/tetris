@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>vTetris</title>
+		<style>
+			body {
+				background: #161616;
+			}
+			canvas {
+				border: 1px solid #777;
+			}
+		</style>
+		<script>
+			window.addEventListener('load', function(){
+				var canvas = document.querySelector('#cnv'),
+					context = canvas.getContext('2d'),
+					figures = [],
+					settings = {
+						unit: 30,
+						width: 10,
+						height: 20,
+						speed: 500
+					},
+					current,
+					matrix = [];/* Это неподвижная часть игрового поля */
+
+					window.addEventListener('keyup', function(e){
+						var key = e.keyCode;
+						switch(key) {
+							case 13:
+								// Enter
+								
+								break;
+							case 19:
+								// Pause break
+								
+								break;
+							case 27:
+								// Esc
+								utils.clear();
+								
+								break;
+							case 32:
+								// Space
+								
+								break;
+							case 37:
+								// Left
+								if (current.x > 0) {
+									current.x -= 1;
+								}
+								
+								break;
+							case 38:
+								// Top
+								
+								break;
+							case 39:
+								// Right
+								if (current.x < settings.width - current.width) {
+									current.x += 1;
+								}
+								
+								break;
+							case 40:
+								// Bottom
+								
+								break;
+						}
+					}, false);
+					
+					canvas.width = settings.unit * settings.width;
+					canvas.height = settings.unit * settings.height;
+					
+					var utils = {
+						clear: function () {
+							context.save();
+							context.fillStyle = '#161616';
+							context.fillRect(0, 0, canvas.width, canvas.height);
+							context.restore();
+						},
+						draw_square: function (x, y, color) {
+							context.save();
+							context.fillStyle = color;
+							context.fillRect(x * settings.unit, y * settings.unit, settings.unit, settings.unit);
+							context.restore();
+						},
+						random: function () {
+							return Math.floor(Math.random() * 7);
+						},
+						add_to_matrix: function () {
+							for (var i = 0; i < current.coords.length; i++) {
+								var m = current.coords[i];
+								for (var j = 0, d = m.length; j < d; j++) {
+									if (current.coords[i][j] === 1) {
+										matrix.coords[current.y + i][current.x + j] = current.color;
+									}
+								}
+							}
+						}
+					};
+					
+				matrix.coords = [];
+				for (var i = 0; i < settings.height; i++) {
+					matrix.coords[i] = [];
+					for (var j = 0; j < settings.width; j++) {
+						matrix.coords[i][j] = 0;
+					}
+				}
+				matrix.draw = function () {
+					for (var i = 0, c = matrix.coords.length; i < c; i++) {
+						var arr = matrix.coords[i];
+						for (var j = 0, d = arr.length; j < d; j++) {
+							if (matrix.coords[i][j] !== 0) {
+								utils.draw_square(j, i, matrix.coords[i][j]);
+							}
+						}
+					}
+				}
+					
+				utils.clear();
+					
+				
+				
+				// I, J, L, O, S, T, Z
+				
+				context.fillStyle = '#31D02B';
+				context.lineWidth = 2;
+				context.strokeStyle = 'rgba(0,0,255,1)';
+				
+				/* Main figure constructor */
+				function Figure(){ 
+					this.x = 0;
+					this.y = 0;
+					this.type = null;
+					
+					this.coords = [];
+					
+					this.draw = function () {
+						for (var i = 0, c = this.coords.length; i < c; i++) {
+							var arr = this.coords[i];
+							for (var j = 0, d = arr.length; j < d; j++) {
+								if (this.coords[i][j] === 1) {
+									utils.draw_square(j + this.x, i + this.y, this.color);
+								}
+							}
+						}
+					}
+					
+					this.get_width = function() {
+						return this.coords[0].length;
+					}
+					this.get_height = function() {
+						return this.coords.length;
+					}
+					this.get_startx = function() {
+						return Math.floor((settings.width - this.get_width())/2)
+					}
+				}
+				var figure = new Figure(0, 0);
+				
+				/* I constructor */
+				figures[0] = function (x, y) {
+					this.coords = [
+						[1],
+						[1],
+						[1],
+						[1]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 'i';
+					this.color = '#d4d9b4';
+
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[0].prototype = figure;
+				
+				/* J constructor */
+				figures[1] = function () {
+					this.coords = [
+						[0, 1],
+						[0, 1],
+						[1, 1]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 'j';
+					this.color = '#bdbfae';
+
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[1].prototype = figure;
+				
+				/* L constructor */
+				figures[2] = function () {
+					this.coords = [
+						[1, 0],
+						[1, 0],
+						[1, 1]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 'l';
+					this.color = '#8c7d7b';
+
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[2].prototype = figure;
+
+				/* O constructor */
+				figures[3] = function () {
+					this.coords = [
+						[1, 1],
+						[1, 1]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 'o';
+					this.color = '#856584';
+					
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[3].prototype = figure;
+
+				/* S constructor */
+				figures[4] = function () {
+					this.coords = [
+						[0, 1, 1],
+						[1, 1, 0]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 's';
+					this.color = '#5e5251';
+					
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[4].prototype = figure;
+
+				/* T constructor */
+				figures[5] = function () {
+					this.coords = [
+						[0, 1, 0],
+						[1, 1, 1]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 't';
+					this.color = '#a4cdbc';
+
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[5].prototype = figure;
+				
+				/* Z constructor */
+				figures[6] = function () {
+					this.coords = [
+						[1, 1, 0],
+						[0, 1, 1]
+					];
+					
+					this.x = this.get_startx();
+					this.y = 0;
+					this.type = 'z';
+					this.color = '#c0a893';
+					
+					this.width = this.get_width();
+					this.height = this.get_height();
+				}
+				figures[6].prototype = figure;
+				
+				
+				
+				
+				utils.clear();
+				function move() {
+					current = new figures[utils.random()]();
+					current.draw();
+					var int = setInterval(function(){
+						//console.log((current.y + current.get_height()));
+						if ((current.y + current.get_height()) < settings.height) {
+							current.y += 1;
+							utils.clear();
+							matrix.draw();
+							current.draw();
+							
+							/********************/
+							
+							
+							var last_m = current.coords.length-1,
+								m = current.coords[last_m],
+								m_count = m.length;
+							
+							
+							function _test(num) {
+								if (current.coords[current.coords.length-1][num] === 1) {
+									var new_y = current.y + current.height - 1,
+										new_x = current.x;
+										
+									if (new_y + 1 < matrix.coords.length) {
+										if (matrix.coords[new_y + 1][new_x] === 1) {
+											//останов
+											//перерисовка
+											
+											utils.add_to_matrix();
+											matrix.draw();
+											
+											clearInterval(int);
+											move();
+											
+										} else {
+											if (num < m_count - 1) {
+												_test(m_count + 1);
+											}
+											
+											//move();
+											//проверяем следующий
+											//utils.draw_square(new_x, new_y, '#FF0');
+										}
+									} else {
+										utils.add_to_matrix();
+										matrix.draw();
+										
+										clearInterval(int);
+										move();
+										// внизу.
+									}
+									
+									
+										
+								}
+							}
+							_test(0);
+						}	else {
+							utils.add_to_matrix();
+							matrix.draw();
+										
+							clearInterval(int);
+							move();
+							// внизу.
+						}
+							
+
+					}, settings.speed);
+				}
+				move();
+				
+				
+				
+				
+				
+				
+			}, false);
+		</script>
+	</head>
+	<body>
+		<canvas id="cnv">
+			Not support canvas
+		</canvas>
+	</body>
+</html>
