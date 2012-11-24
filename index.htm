@@ -3,21 +3,18 @@
 	<head>
 		<title>Summer Tetris</title>
 		<meta charset="utf-8" />
-		<style>
-			body {
-				background: #161616;
-			}
-			canvas {
-				border: 4px double #777;
-				padding: 2px;
-			}
-		</style>
+		<link href="main.css" type="text/css" rel="stylesheet" />
 	</head>
 	<body>
-		<canvas id="cnv">
-			Not support canvas
-		</canvas>
-		
+		<div id="container">
+			<h1>sTetris</h1>
+			<canvas id="cnv">
+				Not support canvas
+			</canvas>
+			<div id="info">
+				Score:
+			</div>
+		</div>
 		<script>
 			'use strict';
 			var Tetris = function() {
@@ -151,7 +148,7 @@
 				}();
 					
 					
-					/*
+					
 					window.addEventListener('keyup', function(e){
 						var key = e.keyCode;
 						switch(key) {
@@ -174,8 +171,8 @@
 								break;
 							case 37:
 								// Left
-								if (current.x > 0) {
-									current.x -= 1;
+								if (current_letter.x > 0) {
+									current_letter.x -= 1;
 								}
 								
 								break;
@@ -185,8 +182,8 @@
 								break;
 							case 39:
 								// Right
-								if (current.x < settings.width - current.width) {
-									current.x += 1;
+								if (current_letter.x < settings.width - current_letter.width) {
+									current_letter.x += 1;
 								}
 								
 								break;
@@ -195,8 +192,8 @@
 								
 								break;
 						}
-				*/
-					
+				
+					});
 					
 				
 					
@@ -225,11 +222,10 @@
 						return Math.floor((settings.width - this.get_width())/2);
 					},
 					draw : function() {
-						console.log(this.x, this.y);
 						for(var i = 0, count_i = this.coords.length; i < count_i; i++) {
 							for(var j = 0, count_j = this.coords[i].length; j < count_j; j++) {
 								if (this.coords[i][j]) {
-									canvas.draw_unit(this.y + j, this.x + i, this.color);
+									canvas.draw_unit(this.x + j, this.y + i, this.color);
 								}
 							}
 						}
@@ -295,7 +291,7 @@
 					this.y = y || 0;
 					
 					this.type = 'J';
-					this.color = '#32C832';
+					this.color = '#C6319F';
 
 					this.width = this.get_width();
 					this.height = this.get_height();
@@ -313,7 +309,7 @@
 					this.y = y || 0;
 					
 					this.type = 'L';
-					this.color = '#C66F31';
+					this.color = '#C68131';
 
 					this.width = this.get_width();
 					this.height = this.get_height();
@@ -381,7 +377,7 @@
 					this.y = y || 0;
 					
 					this.type = 'Z';
-					this.color = '#c0a893';
+					this.color = '#BFC631';
 					
 					this.width = this.get_width();
 					this.height = this.get_height();
@@ -400,10 +396,14 @@
 						current_letter = Letters.random();
 						current_letter.draw();
 						setInterval(function(){
-							current_letter.x += 1;
+							if (current_letter.y + current_letter.height == settings.height) {
+								current_letter = Letters.random();
+							} else {
+								current_letter.y += 1;
+							}
 							canvas.clear();
 							current_letter.draw();
-						}, 1000);
+						}, settings.speed);
 					}
 				};
 			}();
@@ -414,7 +414,7 @@
 					unit: 20,
 					width: 10,
 					height: 20,
-					speed: 200
+					speed: 500
 				});
 			}, false);
 		</script>
