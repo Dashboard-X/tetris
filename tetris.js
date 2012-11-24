@@ -1,4 +1,5 @@
 'use strict';
+
 var Tetris = function() {
 	var defaults = {
 			unit: 30,
@@ -42,7 +43,7 @@ var Tetris = function() {
 			draw_grid();
 		}
 					
-		function clear_bg() { /* Очищает поле */
+		function clear_bg() { /* РћС‡РёС‰Р°РµС‚ РїРѕР»Рµ */
 			context.fillStyle = bg_color;
 			context.fillRect(0, 0, settings.width*settings.unit, settings.height*settings.unit);
 		}
@@ -180,11 +181,11 @@ var Tetris = function() {
 				
 				
 				
-// Основные характеристики букв -
-// позиция - х и у
-// массив данных
-// цвет
-// ширина, высота - высчитывается
+// РћСЃРЅРѕРІРЅС‹Рµ С…Р°СЂР°РєС‚РµСЂРёСЃС‚РёРєРё Р±СѓРєРІ -
+// РїРѕР·РёС†РёСЏ - С… Рё Сѓ
+// РјР°СЃСЃРёРІ РґР°РЅРЅС‹С…
+// С†РІРµС‚
+// С€РёСЂРёРЅР°, РІС‹СЃРѕС‚Р° - РІС‹СЃС‡РёС‚С‹РІР°РµС‚СЃСЏ
 			
 /* Main figure constructor */
 function Letters(x, y) { 
