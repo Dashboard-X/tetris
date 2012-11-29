@@ -35,7 +35,7 @@ var Tetris = function() {
 			return Math.floor(Math.random() * num);
 		}
 	};
-				
+
 	/* Drawing object */
 	var canvas = function(){
 		var el = document.getElementById('cnv'),
@@ -55,7 +55,7 @@ var Tetris = function() {
 					
 		function clear_bg() { /* Очищает поле */
 			context.fillStyle = bg_color;
-			context.fillRect(0, 0, settings.width*settings.unit, settings.height*settings.unit);
+			context.fillRect(0, 0, width, height);
 		}
 				
 		function draw_horizontal_line(y) {
@@ -221,6 +221,10 @@ var Tetris = function() {
 					}
 				}
 			}
+		},
+		move_left : function() {
+			this.left -= 1;
+			this.redraw();
 		}
 	};
 				
