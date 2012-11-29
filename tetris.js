@@ -13,7 +13,17 @@ var Tetris = function() {
 		grid_color = '#333',
 		width,
 		height,
-		grid_width = 1; 
+		grid_width = 1,
+		KEYS = {
+			ENTER       : 13,
+			PAUSE_BREAK : 19,
+			ESC         : 27,
+			SPACE       : 32,
+			LEFT        : 37,
+			TOP         : 38,
+			RIGHT       : 39,
+			BOTTOM      : 40
+		}; 
 
 
 	/* Utilities */
@@ -135,250 +145,250 @@ var Tetris = function() {
 	window.addEventListener('keyup', function(e){
 		var key = e.keyCode;
 		switch(key) {
-		case 13:
+		case KEYS.ENTER:
 			// Enter
 			
 			break;
-		case 19:
+		case KEYS.PAUSE_BREAK:
 			// Pause break
 					
 			break;
-		case 27:
-		// Esc
-		utils.clear();
+		case KEYS.ESC:
+			// Esc
+			utils.clear();
 				
-		break;
-	case 32:
-		// Space
+			break;
+		case KEYS.SPACE:
+			// Space
 					
-		break;
-	case 37:
-		// Left
-		if (current_letter.x > 0) {
-			current_letter.x -= 1;
-		}
+			break;
+		case KEYS.LEFT:
+			// Left
+			if (current_letter.x > 0) {
+				current_letter.x -= 1;
+			}
 							
-		break;
-	case 38:
-		// Top
+			break;
+		case KEYS.TOP:
+			// Top
 							
-		break;
-	case 39:
-		// Right
-		if (current_letter.x < settings.width - current_letter.width) {
-			current_letter.x += 1;
-		}
-						
-		break;
-	case 40:
-		// Bottom
+			break;
+		case KEYS.RIGHT:
+			// Right
+			if (current_letter.x < settings.width - current_letter.width) {
+				current_letter.x += 1;
+			}
+							
+			break;
+		case KEYS.BOTTOM:
+			// Bottom
 					
-		break;
-	}	
-});
+			break;
+		}	
+	});
 				
 			
 				
 				
 				
-// Основные характеристики букв -
-// позиция - х и у
-// массив данных
-// цвет
-// ширина, высота - высчитывается
-			
-/* Main figure constructor */
-function Letters(x, y) { 
-	this.x = x || 0;
-	this.y = y || 0;
-}
-
-Letters.prototype = {
-	get_width : function() {
-		return this.coords[0].length;
-	},
-	get_height : function() {
-		return this.coords.length;
-	},
-	get_startx : function() {
-		return Math.floor((settings.width - this.get_width())/2);
-	},
-	draw : function() {
-		for(var i = 0, count_i = this.coords.length; i < count_i; i++) {
-			for(var j = 0, count_j = this.coords[i].length; j < count_j; j++) {
-				if (this.coords[i][j]) {
-					canvas.draw_unit(this.x + j, this.y + i, this.color);
+	// Основные характеристики букв -
+	// позиция - х и у
+	// массив данных
+	// цвет
+	// ширина, высота - высчитывается
+				
+	/* Main figure constructor */
+	function Letters(x, y) { 
+		this.x = x || 0;
+		this.y = y || 0;
+	}
+	
+	Letters.prototype = {
+		get_width : function() {
+			return this.coords[0].length;
+		},
+		get_height : function() {
+			return this.coords.length;
+		},
+		get_startx : function() {
+			return Math.floor((settings.width - this.get_width())/2);
+		},
+		draw : function() {
+			for(var i = 0, count_i = this.coords.length; i < count_i; i++) {
+				for(var j = 0, count_j = this.coords[i].length; j < count_j; j++) {
+					if (this.coords[i][j]) {
+						canvas.draw_unit(this.x + j, this.y + i, this.color);
+					}
 				}
 			}
 		}
+	};
+				
+	var base_letter = new Letters(0, 0);
+			
+	Letters.all = []; // Array of all letter
+				
+	// Create new letter by type
+	Letters.create = function(type) {
+		if (typeof Letters[type] !== 'function') {
+			throw new Error('Error: ...');
+		}
+		return new Letters[type]();
 	}
-};
 			
-var base_letter = new Letters(0, 0);
-		
-Letters.all = []; // Array of all letter
-			
-// Create new letter by type
-Letters.create = function(type) {
-	if (typeof Letters[type] !== 'function') {
-		throw new Error('Error: ...');
+	// Create new letter of random type 
+	Letters.random = function() {
+		return Letters.create(Letters.all[utils.random(Letters.all.length)]);
+	};
+				
+	// Add new letter type
+	Letters.addNew = function(letter, func) {
+		Letters.all.push(letter);
+		Letters[letter] = func;
+		Letters[letter].prototype = base_letter;
 	}
-	return new Letters[type]();
-}
-		
-// Create new letter of random type 
-Letters.random = function() {
-	return Letters.create(Letters.all[utils.random(Letters.all.length)]);
-};
-			
-// Add new letter type
-Letters.addNew = function(letter, func) {
-	Letters.all.push(letter);
-	Letters[letter] = func;
-	Letters[letter].prototype = base_letter;
-}
-			
-			
-/* ***** default letters: I, J, L, O, S, T, Z ***** */
-
-/* I constructor */
-Letters.addNew('I', function (x, y) {
-	this.coords = [
-		[1],
-		[1],
-		[1],
-		[1]
-	];
 				
-	this.x = x || this.get_startx();
-	this.y = y || 0;
 				
-	this.type = 'I';
-	this.color = '#31C6B0';
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-			
-				
-/* J constructor */
-Letters.addNew('J', function (x, y) {
-	this.coords = [
-		[0, 1],
-		[0, 1],
-		[1, 1]
-	];
-				
-	this.x = x || this.get_startx();
-	this.y = y || 0;
-				
-	this.type = 'J';
-	this.color = '#C6319F';
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-				
-/* L constructor */
-Letters.addNew('L', function (x, y) {
-	this.coords = [
-		[1, 0],
-		[1, 0],
-		[1, 1]
-	];
-				
-	this.x = x || this.get_startx();
-	this.y = y || 0;
-				
-	this.type = 'L';
-	this.color = '#C68131';
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-
-/* O constructor */
-Letters.addNew('O', function (x, y) {
-	this.coords = [
-		[1, 1],
-		[1, 1]
-	];
-				
-	this.x = x || this.get_startx();
-	this.y = y || 0;
-				
-	this.type = 'O';
-	this.color = '#B7C631';
-				
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-
-/* S constructor */
-Letters.addNew('S', function (x, y) {
-	this.coords = [
-		[0, 1, 1],
-		[1, 1, 0]
-	];
-				
-	this.x = x || this.get_startx();
-	this.y = y || 0;
+	/* ***** default letters: I, J, L, O, S, T, Z ***** */
+	
+	/* I constructor */
+	Letters.addNew('I', function (x, y) {
+		this.coords = [
+			[1],
+			[1],
+			[1],
+			[1]
+		];
 					
-	this.type = 'S';
-	this.color = '#32C832';
-				
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-
-/* T constructor */
-Letters.addNew('T', function (x, y) {
-	this.coords = [
-		[0, 1, 0],
-		[1, 1, 1]
-	];
-				
-	this.x = x || this.get_startx();
-	this.y = y || 0;
-				
-	this.type = 'T';
-	this.color = '#31C679';
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-				
-/* Z constructor */
-Letters.addNew('Z', function (x, y) {
-	this.coords = [
-		[1, 1, 0],
-		[0, 1, 1]
-	];
+		this.x = x || this.get_startx();
+		this.y = y || 0;
 					
-	this.x = x || this.get_startx();
-	this.y = y || 0;
+		this.type = 'I';
+		this.color = '#31C6B0';
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+				
+					
+	/* J constructor */
+	Letters.addNew('J', function (x, y) {
+		this.coords = [
+			[0, 1],
+			[0, 1],
+			[1, 1]
+		];
+					
+		this.x = x || this.get_startx();
+		this.y = y || 0;
+					
+		this.type = 'J';
+		this.color = '#C6319F';
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+					
+	/* L constructor */
+	Letters.addNew('L', function (x, y) {
+		this.coords = [
+			[1, 0],
+			[1, 0],
+			[1, 1]
+		];
+					
+		this.x = x || this.get_startx();
+		this.y = y || 0;
+					
+		this.type = 'L';
+		this.color = '#C68131';
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+	
+	/* O constructor */
+	Letters.addNew('O', function (x, y) {
+		this.coords = [
+			[1, 1],
+			[1, 1]
+		];
+					
+		this.x = x || this.get_startx();
+		this.y = y || 0;
+					
+		this.type = 'O';
+		this.color = '#B7C631';
+					
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+	
+	/* S constructor */
+	Letters.addNew('S', function (x, y) {
+		this.coords = [
+			[0, 1, 1],
+			[1, 1, 0]
+		];
+					
+		this.x = x || this.get_startx();
+		this.y = y || 0;
 						
-	this.type = 'Z';
-	this.color = '#BFC631';
+		this.type = 'S';
+		this.color = '#32C832';
 					
-	this.width = this.get_width();
-	this.height = this.get_height();
-});
-				
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+	
+	/* T constructor */
+	Letters.addNew('T', function (x, y) {
+		this.coords = [
+			[0, 1, 0],
+			[1, 1, 1]
+		];
+					
+		this.x = x || this.get_startx();
+		this.y = y || 0;
+					
+		this.type = 'T';
+		this.color = '#31C679';
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+					
+	/* Z constructor */
+	Letters.addNew('Z', function (x, y) {
+		this.coords = [
+			[1, 1, 0],
+			[0, 1, 1]
+		];
+						
+		this.x = x || this.get_startx();
+		this.y = y || 0;
+							
+		this.type = 'Z';
+		this.color = '#BFC631';
+						
+		this.width = this.get_width();
+		this.height = this.get_height();
+	});
+					
 			
-/* Returned object */
-return {
-	init : function(params) {
-		settings = params;
-		width = settings.width * (settings.unit + 1) + 1;
-		height = settings.height * (settings.unit + 1) + 1;
-		canvas.init();
-		// ////////////////////////////
-
-		current_letter = Letters.random();
-		current_letter.draw();
-		setInterval(function(){
-			if (current_letter.y + current_letter.height == settings.height) {
-				current_letter = Letters.random();
-			} else {
-				current_letter.y += 1;
-			}
+	/* Returned object */
+	return {
+		init : function(params) {
+			settings = params;
+			width = settings.width * (settings.unit + 1) + 1;
+			height = settings.height * (settings.unit + 1) + 1;
+			canvas.init();
+			// ////////////////////////////
+	
+			current_letter = Letters.random();
+			current_letter.draw();
+			setInterval(function(){
+				if (current_letter.y + current_letter.height == settings.height) {
+					current_letter = Letters.random();
+				} else {
+					current_letter.y += 1;
+				}
 				canvas.clear();
 				current_letter.draw();
 			}, settings.speed);
