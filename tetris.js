@@ -1,19 +1,30 @@
+/*
+ * Summer tetris
+ * http://github.com/summerstyle/tetris
+ *
+ * Copyright 2012 Vera Lobacheva (summerstyle.ru)
+ * Released under the MIT license (MIT-LICENSE.txt)
+ *
+ * Thu Dec 15 2012 20:10:30 GMT+0400
+ */
+
 'use strict';
 
 var Tetris = function() {
 	var defaults = {
-			unit: 30,
-			width: 10,
-			height: 20,
-			speed: 200
+			unit       : 30,
+			width      : 10,
+			height     : 20,
+			speed      : 200,
+			bg_color   : '#161616',
+			grid_color : '#333',
+			grid_width : 1
 		},
-		settings = defaults,
+		settings = {},
 		current_letter = null,
-		bg_color = '#161616',
-		grid_color = '#333',
 		width,
 		height,
-		grid_width = 1,
+		// KEYS config
 		KEYS = {
 			ENTER       : 13,
 			PAUSE_BREAK : 19,
@@ -33,6 +44,17 @@ var Tetris = function() {
 		},
 		random : function(num) {
 			return Math.floor(Math.random() * num);
+		},
+		extend : function(obj, options) {
+			var target = {};
+			
+			for (name in obj) {
+				if(obj.hasOwnProperty(name)) {
+					target[name] = options[name] ? options[name] : obj[name];
+				}
+			}
+			
+			return target;
 		}
 	};
 
@@ -54,17 +76,17 @@ var Tetris = function() {
 		}
 					
 		function clear_bg() { /* Очищает поле */
-			context.fillStyle = bg_color;
+			context.fillStyle = settings.bg_color;
 			context.fillRect(0, 0, width, height);
 		}
 				
 		function draw_horizontal_line(y) {
-			context.fillStyle = grid_color;
+			context.fillStyle = settings.grid_color;
 			context.fillRect(0, y, width, 1);
 		}
 			
 		function draw_vertical_line(x) {
-			context.fillStyle = grid_color;
+			context.fillStyle = settings.grid_color;
 			context.fillRect(x, 0, 1, height);
 		}
 				
@@ -98,21 +120,21 @@ var Tetris = function() {
 		var matrix = [],
 			colors = [];
 			
-		function create_base(width, height, unit) {
+		function create_base(width, height) {
 			for (var i = 0; i < height; i++) {
-				matrix[i] = 0;
-				for (var j = 0; i < height; j++) {
-					matrix[i][j] = 0;
+				matrix[i] = [];
+				for (var j = 0; j < width; j++) {
+					matrix[i][j] = null;
 				}
 			}
 		}
 		
 		function add_letter() {
-			for (var i = 0; i < current.coords.length; i++) {
-				var m = current.coords[i];
+			for (var i = 0; i < current_letter.coords.length; i++) {
+				var m = current_letter.coords[i];
 				for (var j = 0, d = m.length; j < d; j++) {
-					if (current.coords[i][j] === 1) {
-						matrix.coords[current.y + i][current.x + j] = current.color;
+					if (current_letter.coords[i][j] === 1) {
+						matrix.coords[current_letter.y + i][current_letter.x + j] = current_letter.color;
 					}
 				}
 			}
@@ -120,9 +142,8 @@ var Tetris = function() {
 					
 		function draw() {
 			for (var i = 0, c = matrix.length; i < c; i++) {
-				var arr = matrix[i];
-				for (var j = 0, d = arr.length; j < d; j++) {
-					if (matrix[i][j] !== 0) {
+				for (var j = 0, d = matrix[0].length; j < d; j++) {
+					if (matrix[i][j]) {
 						canvas.draw_unit(j, i, matrix[i][j]);
 					}
 				}
@@ -131,12 +152,50 @@ var Tetris = function() {
 			
 		return {
 			init : function(width, height, unit) {
-				create_base(width, height, unit);
+				create_base(settings.width, settings.height);
 			},
 			addColor : function(color) {
 				colors.push(color);
 			},
-			draw : draw
+			isStop : function(letter) {
+				// проверяем матрицу снизу вверх
+				// начиная слева проверяем столбцы! буквы,
+				// вычисляем абсолютные координаты каждой ячейки
+				// console.dir(data.matrix);
+				for (var columns_count = letter.coords[0].length - 1;
+						 columns_count--;) {
+					
+					var coord = columns_count + letter.get_height();
+					
+					for (var i = 0, rows_count = letter.coords.length; i < rows_count; i++) {
+						if(matrix[coord + 1][letter.x + rows_count] !== null) {
+							
+							this.addLetter(letter);
+							
+							break;
+						
+							return false;
+							
+						}
+						
+					}
+					
+					return true;
+				}
+			},
+			addLetter : function(letter) {
+				for (var i = 0, rows_count = letter.coords.length; i < rows_count; i++) {
+					for (var j = 0, cols_count = letter.coords[0].length; j < cols_count; j++) {
+						if (letter.coords[i][j]) {
+							// console.log(letter.x, letter.y);
+							// matrix[letter.y + i][letter.x + j] = letter.color;
+							matrix[i + letter.y - 1][j + letter.x] = letter.color;
+						}
+					}
+				}
+			},
+			draw : draw,
+			matrix : matrix
 		};
 	}();
 				
@@ -164,9 +223,7 @@ var Tetris = function() {
 			break;
 		case KEYS.LEFT:
 			// Left
-			if (current_letter.x > 0) {
-				current_letter.x -= 1;
-			}
+			current_letter.move_left();
 							
 			break;
 		case KEYS.TOP:
@@ -175,10 +232,8 @@ var Tetris = function() {
 			break;
 		case KEYS.RIGHT:
 			// Right
-			if (current_letter.x < settings.width - current_letter.width) {
-				current_letter.x += 1;
-			}
-							
+			current_letter.move_right();
+
 			break;
 		case KEYS.BOTTOM:
 			// Bottom
@@ -213,6 +268,12 @@ var Tetris = function() {
 		get_startx : function() {
 			return Math.floor((settings.width - this.get_width())/2);
 		},
+		max_x : function() {
+			return settings.width - this.get_width();
+		},
+		max_y : function() {
+			return settings.height - this.get_height();
+		},
 		draw : function() {
 			for(var i = 0, count_i = this.coords.length; i < count_i; i++) {
 				for(var j = 0, count_j = this.coords[i].length; j < count_j; j++) {
@@ -222,9 +283,37 @@ var Tetris = function() {
 				}
 			}
 		},
+		move : function() {
+			this.y += 1;
+			// console.log(this.y > this.max_y(), data.isStop(this));
+			if (this.y > this.max_y() || !data.isStop(this)) {
+				data.addLetter(this);
+				return false;
+			}
+			this.draw();
+			return true;
+		},
+		move_fast : function() {
+			while (1==1) {
+				this.move();
+			}
+		},
 		move_left : function() {
-			this.left -= 1;
-			this.redraw();
+			this.x -= 1;
+			if (this.x < 0) {
+				this.x = 0;
+				return false;
+			}
+			this.draw();
+			return true;
+		},
+		move_right : function() {
+			this.x += 1;
+			if (this.x > this.max_x()) {
+				this.x = this.max_x();
+			}
+			this.draw();
+			return true;
 		}
 	};
 				
@@ -232,7 +321,7 @@ var Tetris = function() {
 			
 	Letters.all = []; // Array of all letter
 				
-	// Create new letter by type
+	// Create new letter by type (factory)
 	Letters.create = function(type) {
 		if (typeof Letters[type] !== 'function') {
 			throw new Error('Error: ...');
@@ -379,22 +468,34 @@ var Tetris = function() {
 	/* Returned object */
 	return {
 		init : function(params) {
-			settings = params;
+			settings = utils.extend(defaults, params);
+			
 			width = settings.width * (settings.unit + 1) + 1;
 			height = settings.height * (settings.unit + 1) + 1;
+			
 			canvas.init();
-			// ////////////////////////////
-	
+			data.init();
+			// //////////////////////////////
+			
+			
+			
+			
+			
+			// //////////////////////////////
 			current_letter = Letters.random();
 			current_letter.draw();
-			setInterval(function(){
-				if (current_letter.y + current_letter.height == settings.height) {
-					current_letter = Letters.random();
-				} else {
-					current_letter.y += 1;
-				}
+			var lo = setInterval(function(){
 				canvas.clear();
-				current_letter.draw();
+				data.draw();
+				if (!current_letter.move()) {
+					current_letter = Letters.random();
+					console.dir(data.matrix);
+				}
+				
+				if (data.isStop(current_letter)) {
+					// clearInterval(lo);
+				}
+				
 			}, settings.speed);
 		}
 	};
